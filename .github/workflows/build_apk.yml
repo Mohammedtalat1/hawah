@@ -1,0 +1,55 @@
+name: Build Hawah Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.6'
+          channel: 'stable'
+          cache: true
+
+      - name: Set up Node.js for Data Preparation
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Prepare Quran, Hadith & Fonts
+        run: |
+          node tools/setup_data.js
+
+      - name: Generate App Launcher Icons
+        working-directory: ./mobile
+        run: |
+          flutter pub get
+          flutter pub run flutter_launcher_icons
+
+      - name: Build Android APK
+        working-directory: ./mobile
+        run: |
+          flutter build apk --release
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Hawah-Release-APK
+          path: mobile/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30

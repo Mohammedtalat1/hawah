@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+mobile/.dart_tool/
+mobile/.packages
+mobile/build/
+
+# Environment
+.env
+backend/.env
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Flutter
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+
+# Generated
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+
+# Logs
+*.log
+npm-debug.log*
+
+# Data files (downloaded by setup tool)
+mobile/assets/data/quran.json
+mobile/assets/data/chapters.json
+mobile/assets/data/bukhari.json
+mobile/assets/data/muslim.json
+mobile/assets/fonts/Amiri-Regular.ttf
+mobile/assets/fonts/Amiri-Bold.ttf
+mobile/assets/fonts/Cairo-Regular.ttf
+mobile/assets/fonts/Cairo-Bold.ttf
+mobile/assets/fonts/Cairo-SemiBold.ttf
+mobile/assets/fonts/Cairo-Medium.ttf
