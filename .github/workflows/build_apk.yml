@@ -46,6 +46,7 @@ jobs:
       - name: Generate Code & App Icons
         working-directory: ./mobile
         run: |
+          flutter create --platforms=android --org com.hawah .
           flutter pub get
           dart run build_runner build --delete-conflicting-outputs
           dart run flutter_launcher_icons
@@ -54,7 +55,7 @@ jobs:
         working-directory: ./mobile
         run: |
           chmod +x android/gradlew || true
-          flutter build apk --release
+          flutter build apk --release --no-tree-shake-icons
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
