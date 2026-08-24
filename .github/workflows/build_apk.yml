@@ -1,8 +1,10 @@
-name: Build Hawah Android APK
+name: Build & Release Hawah Android APK
 
 on:
   push:
     branches: [ main, master ]
+  release:
+    types: [ created, published ]
   workflow_dispatch:
 
 jobs:
@@ -47,9 +49,21 @@ jobs:
         run: |
           flutter build apk --release
 
+      - name: Rename APK File
+        run: |
+          cp mobile/build/app/outputs/flutter-apk/app-release.apk Hawah-app-release.apk
+
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Hawah-Release-APK
-          path: mobile/build/app/outputs/flutter-apk/app-release.apk
+          path: Hawah-app-release.apk
           retention-days: 30
+
+      - name: Upload APK to GitHub Release (if on release)
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Hawah-app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
