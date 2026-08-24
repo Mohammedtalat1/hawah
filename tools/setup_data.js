@@ -117,8 +117,18 @@ async function main() {
   console.log('╚═══════════════════════════════════════════╝');
   console.log();
 
+  const IMAGES_DIR = path.join(MOBILE_ASSETS, 'images');
   ensureDir(DATA_DIR);
   ensureDir(FONTS_DIR);
+  ensureDir(IMAGES_DIR);
+
+  // Copy Hawah.jpg as app_icon.jpg if present
+  const iconSrc = path.join(__dirname, '..', 'Hawah.jpg');
+  const iconDest = path.join(IMAGES_DIR, 'app_icon.jpg');
+  if (fs.existsSync(iconSrc) && !fs.existsSync(iconDest)) {
+    fs.copyFileSync(iconSrc, iconDest);
+    console.log('✓ Copied Hawah.jpg to assets/images/app_icon.jpg');
+  }
 
   let success = 0;
   let failed = 0;
