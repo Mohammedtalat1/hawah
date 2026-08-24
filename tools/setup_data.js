@@ -71,36 +71,53 @@ function ensureDir(dir) {
   }
 }
 
-function downloadFile(url, dest) {
-  return new Promise((resolve, reject) => {
-    const file = fs.createWriteStream(dest);
-    const protocol = url.startsWith('https') ? https : http;
+function downloadFile(url, dest, redirectCount = 0) {
+  if (redirectCount > 10) {
+    return Promise.reject(new Error(`Too many redirects for ${url}`));
+  }
 
-    const request = protocol.get(url, (response) => {
+  return new Promise((resolve, reject) => {
+    const parsedUrl = new URL(url);
+    const protocol = parsedUrl.protocol === 'http:' ? http : https;
+    const options = {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) HawahApp/1.0',
+        'Accept': '*/*',
+      },
+    };
+
+    const request = protocol.get(url, options, (response) => {
       // Handle redirects
       if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
-        file.close();
-        fs.unlinkSync(dest);
-        return downloadFile(response.headers.location, dest).then(resolve).catch(reject);
+        response.resume(); // Consume response data to free up memory
+        const nextUrl = new URL(response.headers.location, url).toString();
+        return downloadFile(nextUrl, dest, redirectCount + 1).then(resolve).catch(reject);
       }
 
       if (response.statusCode !== 200) {
-        file.close();
-        fs.unlinkSync(dest);
+        response.resume();
         reject(new Error(`HTTP ${response.statusCode} for ${url}`));
         return;
       }
 
+      const file = fs.createWriteStream(dest);
       response.pipe(file);
+
       file.on('finish', () => {
+        file.close(() => resolve());
+      });
+
+      file.on('error', (err) => {
         file.close();
-        resolve();
+        if (fs.existsSync(dest)) fs.unlinkSync(dest);
+        reject(err);
       });
     });
 
     request.on('error', (err) => {
-      file.close();
-      if (fs.existsSync(dest)) fs.unlinkSync(dest);
+      if (fs.existsSync(dest)) {
+        try { fs.unlinkSync(dest); } catch (_) {}
+      }
       reject(err);
     });
 
